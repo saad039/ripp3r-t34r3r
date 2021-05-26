@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 100
+PointerAlignment: Left
+AlwaysBreakTemplateDeclarations: Yes
+SpaceBeforeAssignmentOperators: true
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+SpaceAfterLogicalNot: false
+SortIncludes: true
