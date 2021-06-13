@@ -15,7 +15,7 @@ constexpr std::array<char, 26> letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
                                           'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
                                           's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-constexpr int MAX_LENGTH = 2;
+constexpr int MAX_LENGTH = 4;
 constexpr int CHAR_PACK = 440;
 constexpr int SALT_PACK = 441;
 constexpr int HASH_PACK = 442;
@@ -26,7 +26,6 @@ auto break_pass_impl(const string prefix, const size_t length, const string& sal
     if (length) {
 
         const char* passwd = crypt(prefix.data(), salt.c_str());
-
         auto result =
             encrypted_password == passwd ? std::optional(string{prefix.data()}) : std::nullopt;
 
@@ -47,8 +46,8 @@ auto break_password(const string& start, const size_t length, const string& salt
     return break_pass_impl(start, length, salt, hash);
 }
 
-// command to run: sudo mpiexec --allow-run-as-root --mca opal_warn_on_missing_libcuda 0
-// PasswordCracker
+// command to run: sudo mpiexec -n 26 --oversubscribe --allow-run-as-root --mca
+// opal_warn_on_missing_libcuda 0 PasswordCracker
 
 int main(int argc, char** argv) {
 
@@ -68,10 +67,10 @@ int main(int argc, char** argv) {
         record ? 0 : throw std::runtime_error("User not found");
 
         const auto [salt, hash] = record.value();
-
+        // hash = crypt("sex", salt.c_str());
         logln("salt: {}\nhash: {}", salt, hash);
 
-        for (int i = 1; i < 26; i++) {
+        for (int i = 1; i < letters.size(); i++) {
             // Send b,c,d,...,z to other processes
             MPI_Send(&letters[i], 1, MPI_CHAR, i, CHAR_PACK, MPI_COMM_WORLD);
             // Sending Salt to other processes
@@ -80,14 +79,14 @@ int main(int argc, char** argv) {
             MPI_Send(hash.c_str(), BUFFER_SIZE, MPI_CHAR, i, HASH_PACK, MPI_COMM_WORLD);
         }
         // start processing a
-        auto res = break_password({letters[0]}, MAX_LENGTH, salt, hash);
+        auto res = break_password({letters[0]}, MAX_LENGTH, salt, salt + hash);
 
         // if any process finds the password, MPI_ABORT
         if (res) {
-            logln("[Rank: {}]: Password: {}\n", rank, res.value());
+            logln("[Rank: {}]: PASSWORD FOUND: {}\n", rank, res.value());
             MPI_Abort(MPI_COMM_WORLD, EXIT_SUCCESS);
         } else
-            logln("Not Found");
+            logln("[Rank: {}]: Not Found", rank);
     } else {
         int rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -105,9 +104,9 @@ int main(int argc, char** argv) {
 
         logln("[Rank {}]: Working on: {}", rank, prefix);
 
-        auto res = break_password(prefix, MAX_LENGTH, salt, hash);
+        auto res = break_password(prefix, MAX_LENGTH, salt, salt + hash);
         if (res) {
-            logln("[Rank: {}]: Password: {}\n", rank, res.value());
+            logln("[Rank: {}]: PASSWORD FOUND: {}\n", rank, res.value());
             MPI_Abort(MPI_COMM_WORLD, EXIT_SUCCESS);
         } else
             logln("[Rank: {}]: Not Found", rank);
