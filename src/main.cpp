@@ -17,7 +17,7 @@ constexpr std::array<char, 26> letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
                                           'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
                                           's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-constexpr int MAX_LENGTH = 4;
+constexpr int MAX_LENGTH = 3;
 constexpr int CHAR_PACK = 440;
 constexpr int SALT_PACK = 441;
 constexpr int HASH_PACK = 442;
@@ -26,7 +26,6 @@ constexpr int BUFFER_SIZE = 256;
 auto break_pass_impl(const string prefix, const size_t length, const string& salt,
                      const string& encrypted_password) -> std::optional<string> {
     if (length) {
-
         const char* passwd = crypt(prefix.data(), salt.c_str());
         auto result =
             encrypted_password == passwd ? std::optional(string{prefix.data()}) : std::nullopt;
@@ -53,9 +52,6 @@ auto balance_work(std::vector<std::vector<char>>& nodes_work, std::vector<char>&
     if (remaining_work.size() >= nodes_work[0].size()) {}
 }
 
-// command to run: sudo mpiexec -n 26 --oversubscribe --allow-run-as-root
-// --mca opal_warn_on_missing_libcuda 0 PasswordCracker
-
 int main(int argc, char** argv) {
 
     MPI_Init(&argc, &argv);
@@ -74,8 +70,6 @@ int main(int argc, char** argv) {
         record ? 0 : throw std::runtime_error("User not found");
 
         const auto [salt, hash] = record.value();
-
-        // hash = crypt("sex", salt.c_str());
 
         logln("salt: {}\nhash: {}", salt, hash);
 
