@@ -47,11 +47,6 @@ auto break_password(const string& start, const size_t length, const string& salt
     return break_pass_impl(start, length, salt, hash);
 }
 
-auto balance_work(std::vector<std::vector<char>>& nodes_work, std::vector<char>& remaining_work)
-    -> void {
-    if (remaining_work.size() >= nodes_work[0].size()) {}
-}
-
 int main(int argc, char** argv) {
 
     MPI_Init(&argc, &argv);
