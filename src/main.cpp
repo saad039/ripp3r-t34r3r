@@ -113,7 +113,8 @@ int main(int argc, char** argv) {
 
         MPI_Get_count(&status, MPI_CHAR, &chunk_size);
 
-        std::unique_ptr<char[]> chunk(new char[chunk_size]{0});
+        std::unique_ptr<char[]> chunk = std::make_unique<char[]>(chunk_size);
+        std::memset(chunk.get(), 0, chunk_size);
 
         MPI_Recv(chunk.get(), chunk_size, MPI_CHAR, 0, CHAR_PACK, MPI_COMM_WORLD, &status);
 
