@@ -36,9 +36,8 @@ auto break_pass_impl(const string prefix, const size_t length, const string& sal
             if (auto tmp = break_pass_impl(prefix + letter, length - 1, salt, encrypted_password);
                 tmp)
                 return tmp;
-
-        return std::nullopt;
     }
+  
     return std::nullopt;
 }
 
